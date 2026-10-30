@@ -33,7 +33,7 @@ Plataforma para crear invitaciones digitales (bodas, XV años, fiestas) con URLs
 
 ### ⚠️ Problema de seguridad en el sitio actual
 
-`/invitacion/abraham-y-ana` es adivinable. Cualquiera que pruebe nombres puede ver la mesa de otro invitado y **cambiar su RSVP**. En la nueva arquitectura el slug bonito siempre lleva un token corto: `/abraham-y-ana-k2Hv` o `/i/k2Hv2dFx`.
+`/invitacion/abraham-y-ana` es adivinable. Cualquiera que pruebe nombres puede ver la mesa de otro invitado y **cambiar su RSVP**. En la nueva arquitectura el slug bonito siempre lleva un token corto: `/abraham-y-ana-k2Hv2dFxQ8` (token completo de 10 caracteres) o `/i/k2Hv2dFx`.
 
 ---
 
@@ -71,7 +71,7 @@ Analizados: `papeleriaxv-eleganciareal/6011e508` (XV de Rebeca) y `negroydorado/
 | UI invitaciones | Tailwind + CSS variables por tema; **Motion** para sobre y animaciones de scroll                                                                                               |
 | Auth            | Solo un admin: contraseña en variable de entorno + cookie firmada. Los invitados entran por token                                                                              |
 | Archivos        | **Cloudflare R2** (fotos, texturas, mp3, fotos de invitados)                                                                                                                   |
-| Mutaciones      | Server Actions (CMS) + Route Handlers (`/api/rsvp`)                                                                                                                            |
+| Mutaciones      | Server Actions (CMS y RSVP: `src/sections/rsvp/actions.ts`)                                                                                                                    |
 | Hosting         | **Vercel** + Vercel Domains API para dominios propios                                                                                                                          |
 | Extras          | `ics` (archivo de calendario), Spotify embed, links `wa.me` para WhatsApp, `nanoid` (tokens), **SheetJS** (importar invitados desde Excel/CSV)                                 |
 | Tooling         | **Bun** (paquetes y scripts), **Oxlint** con tipos (lint), **Oxfmt** (formato + orden de imports y clases Tailwind), **TypeScript 7** (`tsc --noEmit`). Sin ESLint ni Prettier |
@@ -330,15 +330,14 @@ El tema (`beige-oliva`, `verde-dorado`, etc.) solo define CSS variables + assets
 
 ## 5. URLs y routing
 
-| URL                                                   | Qué muestra                                                                       |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `cool-invitations.mx/{evento}`                        | Invitación genérica (sin datos de pase)                                           |
-| `cool-invitations.mx/{evento}/{invitado}-{token4}`    | Invitación personalizada                                                          |
-| `viridianaydaniel.com/invitacion/{invitado}-{token4}` | Igual, con dominio propio                                                         |
-| `cool-invitations.mx/i/{token}`                       | Link corto para WhatsApp → redirige al anterior                                   |
-| `cool-invitations.mx/c/{client_token}`                | Página privada del cliente: lista de invitados + envío por WhatsApp + estado RSVP |
-| `POST /api/rsvp/{token}`                              | Guardar/actualizar respuesta                                                      |
-| `/admin/...`                                          | CMS                                                                               |
+| URL                                                  | Qué muestra                                                                       |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `cool-invitations.mx/{evento}`                       | Invitación genérica (sin datos de pase)                                           |
+| `cool-invitations.mx/{evento}/{invitado}-{token}`    | Invitación personalizada                                                          |
+| `viridianaydaniel.com/invitacion/{invitado}-{token}` | Igual, con dominio propio                                                         |
+| `cool-invitations.mx/i/{token}`                      | Link corto para WhatsApp → redirige al anterior                                   |
+| `cool-invitations.mx/c/{client_token}`               | Página privada del cliente: lista de invitados + envío por WhatsApp + estado RSVP |
+| `/admin/...`                                         | CMS                                                                               |
 
 `proxy.ts` (antes `middleware.ts`) resuelve el `host`: si es un dominio propio, busca el evento en `domains` y reescribe internamente a `/e/{evento}/...`. Un solo árbol de páginas sirve los dos casos.
 
@@ -407,7 +406,6 @@ src/
     (public)/i/[token]/route.ts              # link corto
     (public)/c/[token]/page.tsx              # página privada del cliente
     admin/events/[id]/export/route.ts        # Excel de links
-    api/rsvp/[token]/route.ts
     api/uploads/[token]/route.ts
     admin/events/...                         # CMS
   proxy.ts                                   # host → evento

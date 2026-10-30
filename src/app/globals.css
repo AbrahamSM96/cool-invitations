@@ -8,6 +8,16 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Invitation theme: values come from the template (src/templates). */
+  --color-inv-bg: var(--inv-bg);
+  --color-inv-ink: var(--inv-ink);
+  --color-inv-muted: var(--inv-muted);
+  --color-inv-accent: var(--inv-accent);
+  --color-inv-on-accent: var(--inv-on-accent);
+  --font-display: var(--inv-font-display);
+  --font-body: var(--inv-font-body);
+  --font-caps: var(--inv-font-caps);
 }
 
 @media (prefers-color-scheme: dark) {
