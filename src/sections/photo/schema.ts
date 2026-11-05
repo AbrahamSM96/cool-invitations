@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
-import { Tone } from '../shared'
+import { imageField, Tone } from '../shared'
 
 export const PhotoSchema = z.object({
   alt: z.string().default(''),
-  imageUrl: z.url(),
+  imageUrl: imageField({ aspect: '3:4', label: 'Foto principal' }),
   tone: Tone.default('base'),
 })
 

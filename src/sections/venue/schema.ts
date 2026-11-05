@@ -1,13 +1,13 @@
 import { z } from 'zod'
 
-import { Tone } from '../shared'
+import { imageField, Tone } from '../shared'
 
 export const VenueSchema = z.object({
   address: z.string().min(1),
   /** Small caps label, e.g. "La unión". */
   eyebrow: z.string().optional(),
   /** Round photo of the place. */
-  imageUrl: z.url().optional(),
+  imageUrl: imageField({ aspect: '1:1', label: 'Foto del lugar' }).optional(),
   mapsUrl: z.url().optional(),
   name: z.string().min(1),
   /** Short note, e.g. "Sé puntual". */
