@@ -1,4 +1,5 @@
 import type { EventType, Voice } from '@/event-types'
+import type { Theme } from '@/templates/types'
 import type { ReactNode } from 'react'
 import type { z } from 'zod'
 
@@ -35,6 +36,9 @@ export interface SectionProps<Data> {
   data: Data
   event: EventView
   guest: GuestView | null
+  theme: Theme
+  /** Layout chosen in the CMS (`sections.variant`); `null` = default. */
+  variant: string | null
 }
 
 export interface SectionModule<Schema extends z.ZodType> {
@@ -44,6 +48,13 @@ export interface SectionModule<Schema extends z.ZodType> {
   schema: Schema
   /** Public rendering. */
   View: (props: SectionProps<z.infer<Schema>>) => ReactNode
+  /**
+   * `overlay`: rendered over the card, outside the scrolling content
+   * (envelope, music button). Defaults to `flow`.
+   */
+  placement?: 'flow' | 'overlay'
+  /** Layouts the CMS can pick; the first one is the default. */
+  variants?: readonly string[]
 }
 
 /**

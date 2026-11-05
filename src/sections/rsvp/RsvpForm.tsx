@@ -1,5 +1,6 @@
 'use client'
 
+import type { Voice } from '@/event-types'
 import { type ReactNode, useActionState, useState } from 'react'
 
 import { submitRsvp } from './actions'
@@ -16,6 +17,8 @@ interface RsvpFormProps {
   askMessage: boolean
   thanksText: string
   declinedText: string
+  /** "Te espero" (singular) vs "Te esperamos" (plural). */
+  voice: Voice
   /** Current answer, if the guest already replied. */
   current: RsvpAnswer | null
 }
@@ -33,6 +36,7 @@ const initialState: RsvpFormState = { status: 'idle' }
  * @param props.maxPasses - Most passes the guest can confirm.
  * @param props.thanksText - Shown after answering "yes".
  * @param props.token - Guest token.
+ * @param props.voice - Grammatical voice of the hosts.
  */
 export function RsvpForm({
   askMessage,
@@ -42,6 +46,7 @@ export function RsvpForm({
   maxPasses,
   thanksText,
   token,
+  voice,
 }: RsvpFormProps): ReactNode {
   const [state, formAction, pending] = useActionState(
     submitRsvp.bind(null, token),
@@ -58,16 +63,16 @@ export function RsvpForm({
   if (!showForm) {
     return (
       <div className="flex flex-col items-center gap-4">
-        <p className="font-display text-3xl text-inv-accent">
+        <p className="font-display text-2xl leading-snug">
           {answered.response === 'yes'
-            ? `¡Gracias, ${displayName}! Te esperamos con ${answered.passes} ${answered.passes === 1 ? 'pase' : 'pases'}.`
+            ? `¡Gracias, ${displayName}! ${voice === 'singular' ? 'Te espero' : 'Te esperamos'} con ${answered.passes} ${answered.passes === 1 ? 'pase' : 'pases'}.`
             : `Gracias por avisarnos, ${displayName}.`}
         </p>
-        <p className="max-w-md">
+        <p className="max-w-sm text-inv-muted">
           {answered.response === 'yes' ? thanksText : declinedText}
         </p>
         <button
-          className="font-caps text-xs tracking-widest text-inv-muted uppercase underline"
+          className="border border-inv-primary px-5 py-2 font-caps text-[11px] tracking-[0.2em] text-inv-primary uppercase"
           onClick={() => setEditingFrom(state)}
           type="button"
         >
@@ -82,16 +87,16 @@ export function RsvpForm({
       action={formAction}
       className="flex w-full max-w-sm flex-col gap-5 text-left"
     >
-      <fieldset className="flex gap-3">
+      <fieldset className="flex flex-col gap-2">
         <legend className="sr-only">¿Asistirás?</legend>
         {(['yes', 'no'] as const).map((value) => (
           <label
-            className="flex-1 cursor-pointer rounded-full border border-inv-accent px-4 py-2 text-center has-checked:bg-inv-accent has-checked:text-inv-on-accent"
+            className="flex cursor-pointer items-center gap-3 border border-inv-accent/50 bg-white/50 px-4 py-3 has-checked:border-inv-primary has-checked:bg-inv-primary has-checked:text-inv-on-primary"
             key={value}
           >
             <input
               checked={response === value}
-              className="sr-only"
+              className="accent-current"
               name="response"
               onChange={() => setResponse(value)}
               type="radio"
@@ -104,11 +109,11 @@ export function RsvpForm({
 
       {response === 'yes' ? (
         <label className="flex flex-col gap-1">
-          <span className="font-caps text-xs tracking-widest text-inv-muted uppercase">
-            Pases
+          <span className="font-caps text-[10px] tracking-[0.25em] text-inv-accent uppercase">
+            Número de pases (máx. {maxPasses})
           </span>
           <select
-            className="rounded-md border border-inv-muted bg-transparent px-3 py-2"
+            className="border border-inv-accent/50 bg-white/50 px-3 py-2.5"
             defaultValue={answered?.passes || maxPasses}
             name="passes"
           >
@@ -125,13 +130,13 @@ export function RsvpForm({
 
       {askMessage ? (
         <label className="flex flex-col gap-1">
-          <span className="font-caps text-xs tracking-widest text-inv-muted uppercase">
+          <span className="font-caps text-[10px] tracking-[0.25em] text-inv-accent uppercase">
             {response === 'yes'
               ? 'Mensaje (opcional)'
               : 'Lamentamos que no puedas asistir, déjanos un mensaje'}
           </span>
           <textarea
-            className="rounded-md border border-inv-muted bg-transparent px-3 py-2"
+            className="border border-inv-accent/50 bg-white/50 px-3 py-2.5"
             defaultValue={answered?.message ?? ''}
             maxLength={MESSAGE_MAX_LENGTH}
             name="message"
@@ -149,7 +154,7 @@ export function RsvpForm({
       ) : null}
 
       <button
-        className="rounded-full bg-inv-accent px-6 py-3 font-caps text-sm tracking-widest text-inv-on-accent uppercase disabled:opacity-60"
+        className="bg-inv-primary px-6 py-3.5 font-caps text-xs tracking-[0.25em] text-inv-on-primary uppercase shadow-sm disabled:opacity-60"
         disabled={pending}
         type="submit"
       >

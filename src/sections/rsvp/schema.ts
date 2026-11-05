@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { Tone } from '../shared'
+
 export const RsvpSchema = z.object({
   /** Ask guests for an optional message. */
   askMessage: z.boolean(),
@@ -7,9 +9,12 @@ export const RsvpSchema = z.object({
   declinedText: z.string().min(1),
   /** Shown on the generic invitation, where nobody can answer. */
   genericText: z.string().min(1),
+  /** Optional line under the title. */
+  text: z.string().optional(),
   /** Shown after answering "yes". */
   thanksText: z.string().min(1),
   title: z.string().min(1),
+  tone: Tone.default('soft'),
 })
 
 export type RsvpData = z.infer<typeof RsvpSchema>

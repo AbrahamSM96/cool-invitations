@@ -1,3 +1,4 @@
+import { SectionFrame } from '@/components/invitation/SectionFrame'
 import type { ReactNode } from 'react'
 
 import type { SectionProps } from '../types'
@@ -17,9 +18,9 @@ export function CountdownView({
   event,
 }: SectionProps<CountdownData>): ReactNode {
   return (
-    <section className="flex flex-col items-center gap-6 px-6 py-16 text-center">
-      <h2 className="font-display text-3xl">{data.title}</h2>
+    <SectionFrame tone={data.tone}>
+      <p className="font-display text-2xl italic">{data.title}</p>
       <Clock afterText={data.afterText} target={event.startsAt.getTime()} />
-    </section>
+    </SectionFrame>
   )
 }

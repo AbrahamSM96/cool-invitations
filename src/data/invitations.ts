@@ -10,6 +10,7 @@ import { cacheLife, cacheTag } from 'next/cache'
 export interface InvitationSection {
   id: string
   type: SectionType
+  variant: string | null
   data: unknown
 }
 
@@ -52,7 +53,12 @@ export async function getPublishedEvent(
   if (!event) return null
 
   const rows = await db
-    .select({ data: sections.data, id: sections.id, type: sections.type })
+    .select({
+      data: sections.data,
+      id: sections.id,
+      type: sections.type,
+      variant: sections.variant,
+    })
     .from(sections)
     .where(and(eq(sections.eventId, event.id), eq(sections.enabled, true)))
     .orderBy(asc(sections.position))
@@ -61,7 +67,14 @@ export async function getPublishedEvent(
     if (!isSectionType(row.type)) return []
     const parsed = sectionModules[row.type].schema.safeParse(row.data)
     return parsed.success
-      ? [{ data: parsed.data, id: row.id, type: row.type }]
+      ? [
+          {
+            data: parsed.data,
+            id: row.id,
+            type: row.type,
+            variant: row.variant,
+          },
+        ]
       : []
   })
 

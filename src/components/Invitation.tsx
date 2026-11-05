@@ -5,13 +5,17 @@ import { templateFontVariables } from '@/templates/fonts'
 import { getTemplate, themeToCssVariables } from '@/templates/registry'
 import type { ReactNode } from 'react'
 
+import { RsvpBar } from './invitation/RsvpBar'
+
 interface InvitationProps {
   invitation: PublishedEvent
   guest: GuestView | null
 }
 
 /**
- * Renders an event's sections inside its template theme.
+ * Renders an event inside its template: a phone-sized card that fills the
+ * screen on mobile and floats over the template's stage on wider screens.
+ * Overlay sections (envelope, music) sit outside the scrolling content.
  *
  * @param props - Invitation props.
  * @param props.guest - Guest, when the invitation is personalized.
@@ -19,23 +23,36 @@ interface InvitationProps {
  */
 export function Invitation({ guest, invitation }: InvitationProps): ReactNode {
   const { theme } = getTemplate(invitation.templateKey)
+  const hasRsvp = invitation.sections.some((section) => section.type === 'rsvp')
+
+  const rendered = invitation.sections.map((section) => {
+    const sectionModule = sections[section.type]
+    const { View } = sectionModule
+    const element = (
+      <View
+        data={section.data as never}
+        event={invitation.event}
+        guest={guest}
+        key={section.id}
+        theme={theme}
+        variant={section.variant}
+      />
+    )
+    return { element, overlay: sectionModule.placement === 'overlay' }
+  })
 
   return (
-    <main
-      className={`${templateFontVariables} flex-1 bg-inv-bg font-body text-inv-ink`}
+    <div
+      className={`${templateFontVariables} inv-stage fixed inset-0 flex items-center justify-center font-body text-inv-ink md:p-8`}
       style={themeToCssVariables(theme)}
     >
-      {invitation.sections.map((section) => {
-        const { View } = sections[section.type]
-        return (
-          <View
-            data={section.data as never}
-            event={invitation.event}
-            guest={guest}
-            key={section.id}
-          />
-        )
-      })}
-    </main>
+      <div className="relative h-svh w-full overflow-hidden bg-inv-bg md:h-[min(880px,calc(100svh-4rem))] md:max-w-[440px] md:rounded-[4px] md:shadow-[0_30px_80px_-20px_rgba(40,30,20,0.45)]">
+        <main className="h-full overflow-y-auto overscroll-contain scroll-smooth">
+          {rendered.filter((item) => !item.overlay).map((item) => item.element)}
+          {guest?.enabled && hasRsvp ? <RsvpBar guest={guest} /> : null}
+        </main>
+        {rendered.filter((item) => item.overlay).map((item) => item.element)}
+      </div>
+    </div>
   )
 }

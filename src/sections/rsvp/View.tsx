@@ -1,3 +1,5 @@
+import { SectionFrame } from '@/components/invitation/SectionFrame'
+import { SectionHeading } from '@/components/invitation/SectionHeading'
 import { formatEventDate } from '@/lib/dates'
 import type { ReactNode } from 'react'
 
@@ -21,23 +23,32 @@ export function RsvpView({
   guest,
 }: SectionProps<RsvpData>): ReactNode {
   return (
-    <section
-      className="flex flex-col items-center gap-6 px-6 py-16 text-center"
-      id="rsvp"
-    >
-      <h2 className="font-display text-4xl">{data.title}</h2>
+    <SectionFrame id="rsvp" tone={data.tone}>
+      <SectionHeading title={data.title} />
+      {guest ? (
+        <p className="text-sm text-inv-muted">
+          Confirmación para{' '}
+          <strong className="font-semibold text-inv-ink">
+            {guest.displayName}
+          </strong>
+        </p>
+      ) : null}
+      {data.text ? (
+        <p className="max-w-sm font-display text-xl">{data.text}</p>
+      ) : null}
       {event.rsvpDeadline ? (
-        <p className="text-inv-muted">
+        <p className="font-display text-inv-muted italic">
           Confirma antes del{' '}
           {formatEventDate(event.rsvpDeadline, event.timezone, {
             day: 'numeric',
             month: 'long',
+            year: 'numeric',
           })}
         </p>
       ) : null}
-      {guest === null ? <p className="max-w-md">{data.genericText}</p> : null}
+      {guest === null ? <p className="max-w-sm">{data.genericText}</p> : null}
       {guest && !guest.enabled ? (
-        <p className="max-w-md">Este pase ya no está disponible.</p>
+        <p className="max-w-sm">Este pase ya no está disponible.</p>
       ) : null}
       {guest?.enabled ? (
         <RsvpForm
@@ -48,8 +59,9 @@ export function RsvpView({
           maxPasses={guest.maxPasses}
           thanksText={data.thanksText}
           token={guest.token}
+          voice={event.voice}
         />
       ) : null}
-    </section>
+    </SectionFrame>
   )
 }

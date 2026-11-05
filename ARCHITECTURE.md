@@ -328,6 +328,24 @@ El tema (`beige-oliva`, `verde-dorado`, etc.) solo define CSS variables + assets
 
 ---
 
+### Diseño de las invitaciones (sin editor libre)
+
+Diseños predefinidos, no un editor tipo Canva. Tres capas:
+
+| Capa      | Qué define                                                                                                                              | Dónde                           |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Plantilla | colores, fuentes (incluida una script), escena de fondo en escritorio, textura de franjas, sobre, tipo de adorno (`sprig` / `flourish`) | `src/templates/<key>/theme.ts`  |
+| Sección   | contenido validado por Zod + `tone` de la franja (`base` / `soft` / `strong`)                                                           | `src/sections/<tipo>/schema.ts` |
+| Variante  | layout alterno de una sección (`hero`: `classic` / `photo`)                                                                             | columna `sections.variant`      |
+
+- La invitación es una tarjeta tamaño celular: pantalla completa en móvil y flotando sobre la escena de la plantilla en escritorio.
+- Server Components por defecto. Solo son cliente: sobre, reloj, formulario RSVP, botón copiar y música.
+- Animación de entrada por scroll con CSS (`animation-timeline: view()`), sin JavaScript.
+- Barra fija de estado RSVP (se refresca con `refresh()` después de responder).
+- Plantillas actuales: `beige-oliva` (boda) y `lila-real` (XV).
+
+---
+
 ## 5. URLs y routing
 
 | URL                                                  | Qué muestra                                                                       |

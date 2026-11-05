@@ -3,6 +3,7 @@
 import { db } from '@/db'
 import { events, guests, rsvpHistory, rsvps } from '@/db/schema'
 import { eq, sql } from 'drizzle-orm'
+import { refresh } from 'next/cache'
 import { headers } from 'next/headers'
 
 import { type RsvpFormState, RsvpSubmission } from './schema'
@@ -78,6 +79,9 @@ export async function submitRsvp(
       userAgent: requestHeaders.get('user-agent'),
     }),
   ])
+
+  // Re-render the page so server parts (e.g. the RSVP bar) show the answer.
+  refresh()
 
   return { answer, status: 'saved' }
 }

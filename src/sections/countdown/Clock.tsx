@@ -74,13 +74,13 @@ export function Clock({ afterText, target }: ClockProps): ReactNode {
   ]
 
   return (
-    <dl className="flex justify-center gap-6">
+    <dl className="grid w-full max-w-xs grid-cols-4 divide-x divide-inv-muted/30 border-y border-inv-muted/30 py-4">
       {units.map((unit) => (
-        <div className="flex w-16 flex-col items-center" key={unit.label}>
-          <dd className="font-display text-4xl text-inv-accent tabular-nums">
+        <div className="flex flex-col items-center gap-1" key={unit.label}>
+          <dd className="font-display text-4xl font-light tabular-nums">
             {unit.value === null ? '--' : String(unit.value).padStart(2, '0')}
           </dd>
-          <dt className="font-caps text-xs tracking-widest text-inv-muted uppercase">
+          <dt className="font-caps text-[10px] tracking-[0.25em] text-inv-accent uppercase">
             {unit.label}
           </dt>
         </div>

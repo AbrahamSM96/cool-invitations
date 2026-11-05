@@ -1,7 +1,9 @@
 import { z } from 'zod'
 
+import { Tone } from '../shared'
+
 export const DateSchema = z.object({
-  title: z.string().min(1),
+  tone: Tone.default('strong'),
 })
 
 export type DateData = z.infer<typeof DateSchema>
