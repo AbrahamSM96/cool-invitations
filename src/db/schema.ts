@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -24,6 +25,11 @@ export const eventStatus = pgEnum('event_status', [
 export const voice = pgEnum('voice', ['singular', 'plural'])
 export const guestStatus = pgEnum('guest_status', ['enabled', 'disabled'])
 export const rsvpResponse = pgEnum('rsvp_response', ['yes', 'no'])
+export const loginOutcome = pgEnum('login_outcome', [
+  'success',
+  'failure',
+  'bot',
+])
 
 const id = uuid('id').primaryKey().defaultRandom()
 const createdAt = timestamp('created_at', { withTimezone: true })
@@ -160,4 +166,30 @@ export const guestUploads = pgTable('guest_uploads', {
   }),
   id,
   url: text('url').notNull(),
+})
+
+/** Admin login attempts, used for rate limiting and bot blocking. */
+export const loginAttempts = pgTable(
+  'login_attempts',
+  {
+    createdAt,
+    id,
+    ip: text('ip').notNull(),
+    outcome: loginOutcome('outcome').notNull(),
+    /** TOTP window used by a successful login, to refuse replays. */
+    totpStep: integer('totp_step'),
+    userAgent: text('user_agent'),
+  },
+  (t) => [
+    index('login_attempts_ip_created_idx').on(t.ip, t.createdAt),
+    index('login_attempts_created_idx').on(t.createdAt),
+  ]
+)
+
+/** One-time admin codes for when the authenticator app is not at hand. */
+export const adminBackupCodes = pgTable('admin_backup_codes', {
+  codeHash: text('code_hash').notNull().unique(),
+  createdAt,
+  id,
+  usedAt: timestamp('used_at', { withTimezone: true }),
 })

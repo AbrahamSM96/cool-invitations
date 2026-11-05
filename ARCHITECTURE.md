@@ -69,7 +69,7 @@ Analizados: `papeleriaxv-eleganciareal/6011e508` (XV de Rebeca) y `negroydorado/
 | Forms CMS       | **react-hook-form** + `@hookform/resolvers/zod`                                                                                                                                |
 | UI del CMS      | **shadcn/ui** + Tailwind v4; **dnd-kit** para reordenar secciones                                                                                                              |
 | UI invitaciones | Tailwind + CSS variables por tema; **Motion** para sobre y animaciones de scroll                                                                                               |
-| Auth            | Solo un admin: contraseña en variable de entorno + cookie firmada. Los invitados entran por token                                                                              |
+| Auth            | Solo un admin: hash scrypt en variable de entorno + cookie firmada (HMAC). Límite de intentos y bloqueo de bots en `login_attempts`. Los invitados entran por token            |
 | Archivos        | **Cloudflare R2** (fotos, texturas, mp3, fotos de invitados)                                                                                                                   |
 | Mutaciones      | Server Actions (CMS y RSVP: `src/sections/rsvp/actions.ts`)                                                                                                                    |
 | Hosting         | **Vercel** + Vercel Domains API para dominios propios                                                                                                                          |
@@ -343,6 +343,23 @@ Diseños predefinidos, no un editor tipo Canva. Tres capas:
 - Animación de entrada por scroll con CSS (`animation-timeline: view()`), sin JavaScript.
 - Barra fija de estado RSVP (se refresca con `refresh()` después de responder).
 - Plantillas actuales: `beige-oliva` (boda) y `lila-real` (XV).
+
+### Login del admin
+
+`/admin/login` (`src/app/admin/login/actions.ts`, lógica en `src/lib/auth/`). Pide contraseña **y** código de 6 dígitos (TOTP, app de autenticación) o un código de respaldo de un solo uso. Configuración: `bun run admin:credentials` y `bun run admin:2fa`. Toda respuesta tarda ≥ 1 s para no filtrar nada por tiempo.
+
+| Regla              | Bloquea                                                                        |
+| ------------------ | ------------------------------------------------------------------------------ |
+| Bot detectado      | La IP 24 h. Bot = honeypot lleno, token del form falso o envío en menos de 1 s |
+| Ráfaga             | La IP tras 5 fallos en 15 min                                                  |
+| Adivinanza lenta   | La IP tras 10 fallos en 24 h                                                   |
+| Ataque distribuido | El login para todos tras 50 fallos globales en 15 min                          |
+
+- Al bot se le responde "Contraseña o código incorrectos." igual que a una persona: no sabe que lo detectamos.
+- Un código TOTP que ya abrió sesión no se acepta otra vez (`login_attempts.totp_step`). Los códigos de respaldo se guardan como hash en `admin_backup_codes` y solo se gastan si la contraseña fue correcta.
+- Intentar mientras está bloqueado cuenta como fallo, así que insistir mantiene el bloqueo.
+- `proxy.ts` solo revisa la cookie; cada página y Server Action del admin llama `requireAdmin()`.
+- Para desbloquearte: borra tus filas en `login_attempts` (`bun run db:studio`).
 
 ---
 
