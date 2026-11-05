@@ -1,3 +1,4 @@
+import type { SectionType } from '@/sections/catalog'
 import type { z } from 'zod'
 
 import {
@@ -17,17 +18,76 @@ interface EventTypeConfig {
   voice: Voice
   /** Validates `events.hosts` for this type. */
   hostsSchema: z.ZodType
+  /** Sections a new event starts with, in order. Filled in the editor. */
+  defaultSections: readonly { type: SectionType; variant?: string }[]
 }
+
+const HONOREE_SECTIONS = [
+  { type: 'envelope' },
+  { type: 'hero', variant: 'photo' },
+  { type: 'countdown' },
+  { type: 'guest_pass' },
+  { type: 'intro' },
+  { type: 'photo' },
+  { type: 'date' },
+  { type: 'venue' },
+  { type: 'venue' },
+  { type: 'people' },
+  { type: 'dress_code' },
+  { type: 'gifts' },
+  { type: 'rsvp' },
+  { type: 'closing' },
+] as const
 
 export const eventTypes = {
   birthday: {
+    defaultSections: HONOREE_SECTIONS,
     hostsSchema: BirthdayHosts,
     label: 'Cumpleaños',
     voice: 'singular',
   },
-  general: { hostsSchema: GeneralHosts, label: 'General', voice: 'plural' },
-  wedding: { hostsSchema: WeddingHosts, label: 'Boda', voice: 'plural' },
-  xv: { hostsSchema: HonoreeHosts, label: 'XV años', voice: 'singular' },
+  general: {
+    defaultSections: [
+      { type: 'envelope' },
+      { type: 'hero', variant: 'classic' },
+      { type: 'countdown' },
+      { type: 'date' },
+      { type: 'venue' },
+      { type: 'guest_pass' },
+      { type: 'rsvp' },
+      { type: 'closing' },
+    ],
+    hostsSchema: GeneralHosts,
+    label: 'General',
+    voice: 'plural',
+  },
+  wedding: {
+    defaultSections: [
+      { type: 'envelope' },
+      { type: 'hero', variant: 'classic' },
+      { type: 'countdown' },
+      { type: 'intro' },
+      { type: 'photo' },
+      { type: 'date' },
+      { type: 'venue' },
+      { type: 'venue' },
+      { type: 'people' },
+      { type: 'dress_code' },
+      { type: 'gifts' },
+      { type: 'guest_pass' },
+      { type: 'rsvp' },
+      { type: 'closing' },
+    ],
+    hostsSchema: WeddingHosts,
+    label: 'Boda',
+    voice: 'plural',
+  },
+  xv: {
+    defaultSections: HONOREE_SECTIONS,
+    hostsSchema: HonoreeHosts,
+    label: 'XV años',
+    voice: 'singular',
+  },
 } satisfies Record<EventType, EventTypeConfig>
 
 /**

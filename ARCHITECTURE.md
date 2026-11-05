@@ -361,6 +361,24 @@ Diseños predefinidos, no un editor tipo Canva. Tres capas:
 - `proxy.ts` solo revisa la cookie; cada página y Server Action del admin llama `requireAdmin()`.
 - Para desbloquearte: borra tus filas en `login_attempts` (`bun run db:studio`).
 
+### Fotos
+
+El admin sube las fotos desde el editor de secciones (`ImageUploadField`). Flujo:
+
+1. El navegador reduce la foto a 2000 px como máximo y la convierte a WebP (`src/lib/resize-image.ts`). Una foto de celular de ~8 MB queda en ~300 KB.
+2. La Server Action `uploadEventImage` revisa la sesión, el tamaño (≤ 3.5 MB) y el formato **por sus bytes** (`src/lib/image-type.ts`), no por la extensión.
+3. La sube a R2 en `events/{eventId}/{aleatorio}.webp` con caché inmutable y la registra en `media`. La sección guarda la URL pública.
+
+Configuración de R2 (una vez):
+
+1. Cloudflare → R2 → crear bucket (ej. `cool-invitations`).
+2. En el bucket → Settings → Public access: activar el dominio `r2.dev` o conectar un dominio propio. Esa URL es `R2_PUBLIC_URL`.
+3. R2 → Manage API tokens → crear token con permiso **Object Read & Write** solo para ese bucket. Da `R2_ACCESS_KEY_ID` y `R2_SECRET_ACCESS_KEY`.
+4. `R2_ACCOUNT_ID` está en la página principal de R2.
+5. Poner las 5 variables en `.env.local` y en Vercel.
+
+La subida pasa por el servidor (no URLs prefirmadas), así que el bucket no necesita CORS.
+
 ---
 
 ## 5. URLs y routing
@@ -392,6 +410,16 @@ Diseños predefinidos, no un editor tipo Canva. Tres capas:
 5. **Envío** — botón "copiar link del cliente", "regenerar link del cliente" y "descargar Excel de links" (ver 6.1).
 6. **RSVP** — dashboard: confirmados / pendientes / no asisten, total de pases, mensajes, exportar CSV, distribución por mesa.
 7. **Dominio** — conectar dominio propio (Vercel Domains API + verificación DNS).
+
+Implementación:
+
+- Rutas en `src/app/admin/(panel)/` (con barra superior); `/admin/login` queda fuera del grupo.
+- Componentes de **shadcn/ui** (Base UI) en `src/components/ui/`: código generado, excluido de Oxlint para poder actualizarlo con `shadcn add`.
+- La fuente Geist se carga en `src/app/admin/layout.tsx`, no en el layout raíz, para que las invitaciones no la descarguen.
+- Formularios: react-hook-form + el mismo schema Zod que valida la Server Action (`src/app/admin/events/schema.ts`). Mensajes de Zod en español (`src/lib/zod-es.ts`).
+- Editor de secciones (`/admin/events/{id}/sections`): el formulario de cada sección se **genera de su schema Zod** (`src/sections/form-fields.ts`). Etiquetas, ayudas y widgets salen de `.meta({ title, description, widget, fieldOrder, optionLabels })`. `src/sections/catalog.ts` tiene los schemas sin las vistas, para poder usarlos en el navegador.
+- Una sección solo se guarda si pasa su schema; las incompletas (punto ámbar) no se muestran en la invitación. Orden (dnd-kit) y visibilidad se guardan al instante.
+- Un evento nuevo nace con las secciones por defecto de su tipo (`eventTypes[type].defaultSections`), vacías hasta llenarlas en el editor.
 
 ### 6.1 Entrega de links al cliente
 

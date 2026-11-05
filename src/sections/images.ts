@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { sections, type SectionType } from './registry'
+import { sectionCatalog, type SectionType } from './catalog'
 import { imageFields, type ImageMeta } from './shared'
 
 /** One photo the client has to provide for an invitation. */
@@ -29,7 +29,8 @@ interface SectionRow {
  */
 export function getImageSlots(rows: readonly SectionRow[]): ImageSlot[] {
   return rows.flatMap((row) => {
-    const { schema, variants } = sections[row.type]
+    const { schema, ...entry } = sectionCatalog[row.type]
+    const variants = 'variants' in entry ? entry.variants : undefined
     if (!(schema instanceof z.ZodObject)) return []
 
     const variant = row.variant ?? variants?.[0] ?? null

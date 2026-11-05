@@ -3,8 +3,13 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
+  experimental: {
+    // Photos are shrunk in the browser first; 4 MB leaves room to spare and
+    // stays under Vercel's 4.5 MB request limit.
+    serverActions: { bodySizeLimit: '4mb' },
+  },
   images: {
-    // Event photos come from user-provided URLs (later: our R2 bucket).
+    // Event photos live in our R2 bucket; older events may use other hosts.
     remotePatterns: [{ hostname: '**', protocol: 'https' }],
   },
   partialPrefetching: true,

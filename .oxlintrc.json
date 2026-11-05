@@ -125,6 +125,7 @@
     "**/.agents/**",
     "**/.claude/**",
     "drizzle/**",
+    "src/components/ui/**",
     "next-env.d.ts",
     "next.config.ts"
   ],
