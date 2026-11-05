@@ -15,9 +15,9 @@ export default function PanelLayout({
   children,
 }: LayoutProps<'/admin'>): ReactNode {
   return (
-    <div className="flex flex-1 flex-col bg-muted/40">
-      <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-6 px-4">
+    <div className="flex flex-1 flex-col bg-muted/40 print:bg-white">
+      <header className="sticky top-0 z-10 border-b bg-background/90 backdrop-blur print:hidden">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-6 px-4">
           <Link className="font-semibold tracking-tight" href="/admin">
             Cool Invitations
           </Link>
@@ -39,7 +39,7 @@ export default function PanelLayout({
           </form>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
         {children}
       </main>
     </div>

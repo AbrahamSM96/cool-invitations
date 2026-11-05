@@ -20,6 +20,8 @@ export async function EventTabs({
       tabs={[
         { href: base, label: 'Datos' },
         { href: `${base}/sections`, label: 'Secciones' },
+        { href: `${base}/guests`, label: 'Invitados' },
+        { href: `${base}/responses`, label: 'Respuestas' },
       ]}
     />
   )

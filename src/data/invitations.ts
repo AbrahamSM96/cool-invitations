@@ -50,8 +50,18 @@ export async function getPublishedEvent(
     .where(and(eq(events.slug, slug), eq(events.status, 'published')))
     .limit(1)
 
-  if (!event) return null
+  return event ? buildInvitation(event) : null
+}
 
+/**
+ * Loads an event's sections and shapes it for `<Invitation>`. Shared by the
+ * public pages and the admin preview, which picks the event differently.
+ *
+ * @param event - Event row.
+ */
+export async function buildInvitation(
+  event: typeof events.$inferSelect
+): Promise<PublishedEvent> {
   const rows = await db
     .select({
       data: sections.data,

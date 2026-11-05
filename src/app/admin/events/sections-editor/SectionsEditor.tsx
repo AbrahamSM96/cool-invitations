@@ -1,6 +1,7 @@
 'use client'
 
 import type { AdminSection } from '@/data/admin-sections'
+import { getImageSlots } from '@/sections/images'
 import {
   closestCenter,
   DndContext,
@@ -28,6 +29,9 @@ import {
 
 import { AddSectionSelect } from './AddSectionSelect'
 import { EditorEventContext } from './EditorContext'
+import { type ChecklistSlot, PhotoChecklist } from './PhotoChecklist'
+import { PreviewPane } from './PreviewPane'
+import { sectionSubtitle } from './section-subtitle'
 import { SectionForm } from './SectionForm'
 import { SortableSectionItem } from './SortableSectionItem'
 
@@ -56,16 +60,25 @@ export function SectionsEditor({
   )
   const [dirty, setDirty] = useState(false)
   const [adding, startAdding] = useTransition()
+  // Bumped after every saved change so the preview reloads.
+  const [previewVersion, setPreviewVersion] = useState(0)
 
-  // New data from the server (save, add, delete): adopt its order.
+  // New data from the server (save, add, delete, toggle): adopt its order.
   if (synced !== sections) {
     setSynced(sections)
     setOrder(sections.map((s) => s.id))
+    setPreviewVersion((version) => version + 1)
   }
 
   const byId = new Map(sections.map((s) => [s.id, s]))
   const ordered = order.flatMap((id) => byId.get(id) ?? [])
   const selected = selectedId ? byId.get(selectedId) : undefined
+  // Hidden sections never show, so their photos are not asked for.
+  const visible = ordered.filter((section) => section.enabled)
+  const photoSlots: ChecklistSlot[] = getImageSlots(visible).map((slot) => ({
+    ...slot,
+    sectionName: sectionSubtitle(byId.get(slot.sectionId)?.data),
+  }))
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -91,7 +104,9 @@ export function SectionsEditor({
     if (!result.ok) {
       setOrder(previous)
       toast.error(result.error)
+      return
     }
+    setPreviewVersion((version) => version + 1)
   }
 
   /**
@@ -159,8 +174,8 @@ export function SectionsEditor({
   }, [])
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">
-      <aside className="flex flex-col gap-3 lg:sticky lg:top-20">
+    <div className="grid items-start gap-6 lg:grid-cols-[18rem_1fr] xl:grid-cols-[18rem_1fr_auto]">
+      <aside className="flex flex-col gap-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pb-2">
         <DndContext
           collisionDetection={closestCenter}
           onDragEnd={(event) => void onDragEnd(event)}
@@ -185,6 +200,7 @@ export function SectionsEditor({
           <span className="mr-1 inline-block size-2 rounded-full bg-amber-500" />
           Las secciones sin llenar no aparecen en la invitación.
         </p>
+        <PhotoChecklist onOpen={select} slots={photoSlots} />
       </aside>
 
       <section className="rounded-xl border bg-background p-4 sm:p-6">
@@ -203,6 +219,10 @@ export function SectionsEditor({
           </p>
         )}
       </section>
+
+      <aside className="hidden xl:block">
+        <PreviewPane eventId={eventId} version={previewVersion} />
+      </aside>
     </div>
   )
 }

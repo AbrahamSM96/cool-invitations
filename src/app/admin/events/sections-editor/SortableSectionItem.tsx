@@ -8,23 +8,13 @@ import { CSS } from '@dnd-kit/utilities'
 import { EyeIcon, EyeOffIcon, GripVerticalIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 
+import { sectionSubtitle } from './section-subtitle'
+
 interface SortableSectionItemProps {
   section: AdminSection
   selected: boolean
   onSelect: () => void
   onToggle: () => void
-}
-
-/**
- * Reads the most telling text of a section, e.g. a venue's title.
- *
- * @param data - Section data.
- */
-function subtitleOf(data: unknown): string | null {
-  if (typeof data !== 'object' || data === null) return null
-  const record = data as Record<string, unknown>
-  const text = record.title ?? record.name ?? record.code
-  return typeof text === 'string' && text ? text : null
 }
 
 /**
@@ -51,7 +41,7 @@ export function SortableSectionItem({
     transform,
     transition,
   } = useSortable({ id: section.id })
-  const subtitle = subtitleOf(section.data)
+  const subtitle = sectionSubtitle(section.data)
 
   return (
     <li

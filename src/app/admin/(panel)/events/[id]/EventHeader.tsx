@@ -25,16 +25,26 @@ export async function EventHeader({
         <h1 className="text-2xl font-semibold tracking-tight">{event.title}</h1>
         <p className="text-sm text-muted-foreground">/e/{event.slug}</p>
       </div>
-      {event.status === 'published' ? (
+      <div className="flex gap-2 print:hidden">
         <a
           className={buttonVariants({ variant: 'outline' })}
-          href={`/e/${event.slug}`}
+          href={`/admin/preview/${id}`}
           rel="noreferrer"
           target="_blank"
         >
-          Ver invitación
+          Vista previa
         </a>
-      ) : null}
+        {event.status === 'published' ? (
+          <a
+            className={buttonVariants({ variant: 'outline' })}
+            href={`/e/${event.slug}`}
+            rel="noreferrer"
+            target="_blank"
+          >
+            Ver invitación
+          </a>
+        ) : null}
+      </div>
     </div>
   )
 }

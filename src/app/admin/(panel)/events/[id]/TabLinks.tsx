@@ -18,7 +18,7 @@ export function TabLinks({
 }): ReactNode {
   const pathname = usePathname()
   return (
-    <nav className="flex gap-1 border-b">
+    <nav className="flex gap-1 overflow-x-auto border-b print:hidden">
       {tabs.map((tab) => {
         const active = pathname === tab.href
         return (

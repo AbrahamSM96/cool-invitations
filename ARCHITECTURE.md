@@ -377,6 +377,8 @@ Configuración de R2 (una vez):
 4. `R2_ACCOUNT_ID` está en la página principal de R2.
 5. Poner las 5 variables en `.env.local` y en Vercel.
 
+El editor de secciones muestra la checklist **Fotos del cliente** (`getImageSlots` sobre las secciones visibles): cuáles faltan, su formato y un botón que copia el mensaje para pedírselas al cliente por WhatsApp.
+
 La subida pasa por el servidor (no URLs prefirmadas), así que el bucket no necesita CORS.
 
 ---
@@ -418,8 +420,13 @@ Implementación:
 - La fuente Geist se carga en `src/app/admin/layout.tsx`, no en el layout raíz, para que las invitaciones no la descarguen.
 - Formularios: react-hook-form + el mismo schema Zod que valida la Server Action (`src/app/admin/events/schema.ts`). Mensajes de Zod en español (`src/lib/zod-es.ts`).
 - Editor de secciones (`/admin/events/{id}/sections`): el formulario de cada sección se **genera de su schema Zod** (`src/sections/form-fields.ts`). Etiquetas, ayudas y widgets salen de `.meta({ title, description, widget, fieldOrder, optionLabels })`. `src/sections/catalog.ts` tiene los schemas sin las vistas, para poder usarlos en el navegador.
+- Vista previa: `/admin/preview/{id}` muestra cualquier evento (también borradores) sin caché. `?guest=1` usa un invitado de ejemplo; `?envelope=0` quita el sobre. En la pestaña Secciones aparece en un marco de teléfono (pantallas ≥ 1280 px) que se recarga tras cada cambio guardado.
 - Una sección solo se guarda si pasa su schema; las incompletas (punto ámbar) no se muestran en la invitación. Orden (dnd-kit) y visibilidad se guardan al instante.
 - Un evento nuevo nace con las secciones por defecto de su tipo (`eventTypes[type].defaultSections`), vacías hasta llenarlas en el editor.
+
+- Invitados (`/admin/events/{id}/guests`): alta, edición, borrado, copiar link, filtro por respuesta. Teléfonos normalizados a dígitos con lada (`src/lib/phone.ts`): 10 dígitos → `52…`, y el viejo `521…` → `52…`, como pide `wa.me`.
+- Importar Excel/CSV: el archivo se lee **en el navegador** con SheetJS (instalado desde `cdn.sheetjs.com`; el paquete `xlsx` de npm está abandonado y con vulnerabilidades). Las columnas se adivinan por encabezado y se pueden ajustar; cada renglón se valida antes de enviar y otra vez en el servidor (`importGuests`, máx. 2000). Slugs únicos por evento (`abraham-y-ana`, `-2`…). SheetJS se carga solo al abrir el importador.
+- Respuestas (`/admin/events/{id}/responses`): totales, pases por mesa, muro de mensajes imprimible y Excel (`/admin/events/{id}/export`, Route Handler).
 
 ### 6.1 Entrega de links al cliente
 
@@ -440,6 +447,8 @@ Solo el admin entra al CMS. El cliente recibe los links de sus invitados por dos
 - Sin contraseña: el `client_token` (nanoid 16) es el acceso. El admin lo puede regenerar si se filtra.
 - `noindex` y sin vista previa de datos en WhatsApp.
 - Dinámica (no se cachea), siempre muestra el estado actual.
+- Implementado en `src/app/(public)/c/[token]` con `referrer: no-referrer` (el token no se filtra al abrir `wa.me`). No muestra las notas internas. Mensaje de WhatsApp en `src/lib/whatsapp.ts`. El admin copia, abre o regenera el link desde la pestaña Invitados.
+- `/i/{token}` (Route Handler) redirige al link completo con los slugs actuales.
 
 **2. Excel de links (respaldo)** — botón en el admin
 
