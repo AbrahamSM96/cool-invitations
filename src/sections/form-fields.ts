@@ -7,11 +7,15 @@ interface BaseNode {
   description?: string
   /** `false` for `.optional()` and `.default()` fields. */
   required: boolean
+  /** Only shown for these section variants; all when absent. */
+  variants?: readonly string[]
 }
 
 /** How the CMS renders one schema field. Built by `describeSchema`. */
 export type FieldNode =
   | (BaseNode & { kind: 'text' | 'textarea' | 'url' | 'color' | 'number' })
+  /** Picks one of the event's places (`events.places`) by id. */
+  | (BaseNode & { kind: 'place' })
   | (BaseNode & { kind: 'boolean' })
   | (BaseNode & { kind: 'image'; image: ImageMeta })
   | (BaseNode & { kind: 'enum'; options: Record<string, string> })
@@ -56,6 +60,7 @@ export function describeSchema(
     description: meta?.description,
     label: meta?.title ?? fallbackLabel,
     required,
+    variants: meta?.variants,
   }
 
   if (current instanceof z.ZodObject) {
@@ -92,7 +97,14 @@ export function describeSchema(
   if (current instanceof z.ZodNumber) return { ...base, kind: 'number' }
   if (current instanceof z.ZodURL) {
     const image = imageFields.get(current)
-    return image ? { ...base, image, kind: 'image' } : { ...base, kind: 'url' }
+    return image
+      ? {
+          ...base,
+          image,
+          kind: 'image',
+          variants: base.variants ?? image.variants,
+        }
+      : { ...base, kind: 'url' }
   }
   if (current instanceof z.ZodString) {
     return { ...base, kind: meta?.widget ?? 'text' }

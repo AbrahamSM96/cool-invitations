@@ -1,6 +1,7 @@
 import { db } from '@/db'
 import { events, sections } from '@/db/schema'
 import { requireAdmin } from '@/lib/auth/dal'
+import { parsePlaces, type Place } from '@/lib/places'
 import {
   isSectionType,
   sectionCatalog,
@@ -19,7 +20,13 @@ export interface AdminSection {
 }
 
 export interface AdminSectionsPage {
-  event: { id: string; slug: string; title: string; status: string }
+  event: {
+    id: string
+    slug: string
+    title: string
+    status: string
+    places: Place[]
+  }
   sections: AdminSection[]
 }
 
@@ -36,6 +43,7 @@ export async function getAdminSections(
   const [event] = await db
     .select({
       id: events.id,
+      places: events.places,
       slug: events.slug,
       status: events.status,
       title: events.title,
@@ -52,7 +60,7 @@ export async function getAdminSections(
     .orderBy(asc(sections.position))
 
   return {
-    event,
+    event: { ...event, places: parsePlaces(event.places) },
     sections: rows.flatMap((row): AdminSection[] => {
       const { type } = row
       if (!isSectionType(type)) return []

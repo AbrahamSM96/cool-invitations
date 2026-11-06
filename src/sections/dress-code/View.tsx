@@ -25,7 +25,7 @@ export function DressCodeView({
         <ul aria-label="Paleta de colores" className="mt-2 flex gap-2">
           {data.palette.map((color) => (
             <li
-              className="size-7 rounded-full ring-1 ring-black/10"
+              className="size-7 rounded-full ring-1 ring-inv-muted/30"
               key={color}
               style={{ backgroundColor: color }}
             />

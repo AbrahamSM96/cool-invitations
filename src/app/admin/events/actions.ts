@@ -8,8 +8,9 @@ import { events, sections } from '@/db/schema'
 import { eventTypes } from '@/event-types'
 import { requireAdmin } from '@/lib/auth/dal'
 import { zonedLocalToDate } from '@/lib/dates'
+import type { Place } from '@/lib/places'
 import { createClientToken } from '@/lib/tokens'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { updateTag } from 'next/cache'
 import type { z } from 'zod'
 
@@ -25,6 +26,7 @@ type EventColumns = Pick<
   | 'cityLabel'
   | 'clientName'
   | 'hosts'
+  | 'places'
   | 'rsvpDeadline'
   | 'slug'
   | 'startsAt'
@@ -46,6 +48,7 @@ function toColumns(data: EventFormData): EventColumns {
     cityLabel: data.cityLabel,
     clientName: data.clientName,
     hosts: data.hosts,
+    places: data.places,
     rsvpDeadline: data.rsvpDeadline
       ? zonedLocalToDate(data.rsvpDeadline, data.timezone)
       : null,
@@ -58,6 +61,62 @@ function toColumns(data: EventFormData): EventColumns {
     type: data.type,
     voice: data.voice,
   }
+}
+
+/**
+ * Points still-empty "Lugar" sections at places nobody uses yet, in order:
+ * first empty venue → first free place. Sections the admin already filled
+ * or linked are left alone.
+ *
+ * @param rows - Sections of the event, in order.
+ * @param places - Places of the event, in order.
+ */
+function linkVenuesToPlaces<Row extends { type: string; data: unknown }>(
+  rows: Row[],
+  places: readonly Place[]
+): Row[] {
+  const used = new Set(
+    rows.flatMap((row) => {
+      const placeId = (row.data as { placeId?: unknown } | null)?.placeId
+      return typeof placeId === 'string' ? [placeId] : []
+    })
+  )
+  const free = places.filter((place) => !used.has(place.id))
+  return rows.map((row) => {
+    const empty =
+      typeof row.data === 'object' &&
+      row.data !== null &&
+      Object.keys(row.data).length === 0
+    if (row.type !== 'venue' || !empty) return row
+    const place = free.shift()
+    return place ? { ...row, data: { placeId: place.id } } : row
+  })
+}
+
+/**
+ * After saving, links places added since the last save to empty "Lugar"
+ * sections, so they show up without visiting the sections editor.
+ *
+ * @param eventId - Event id.
+ * @param places - Saved places.
+ */
+async function linkNewPlaces(
+  eventId: string,
+  places: readonly Place[]
+): Promise<void> {
+  if (places.length === 0) return
+  const rows = await db
+    .select({ data: sections.data, id: sections.id, type: sections.type })
+    .from(sections)
+    .where(eq(sections.eventId, eventId))
+    .orderBy(asc(sections.position))
+  const linked = linkVenuesToPlaces(rows, places)
+  const [first, ...rest] = linked
+    .filter((row, i) => row.data !== rows[i]?.data)
+    .map((row) =>
+      db.update(sections).set({ data: row.data }).where(eq(sections.id, row.id))
+    )
+  if (first !== undefined) await db.batch([first, ...rest])
 }
 
 /**
@@ -121,13 +180,17 @@ export async function createEvent(input: unknown): Promise<EventActionResult> {
         id,
       }),
       db.insert(sections).values(
-        eventTypes[parsed.data.type].defaultSections.map(
-          (section, position) => ({
-            eventId: id,
-            position,
-            type: section.type,
-            variant: 'variant' in section ? section.variant : null,
-          })
+        linkVenuesToPlaces(
+          eventTypes[parsed.data.type].defaultSections.map(
+            (section, position) => ({
+              data: {},
+              eventId: id,
+              position,
+              type: section.type,
+              variant: 'variant' in section ? section.variant : null,
+            })
+          ),
+          parsed.data.places
         )
       ),
     ])
@@ -167,6 +230,7 @@ export async function updateEvent(
     if (isSlugTaken(error)) return SLUG_TAKEN
     throw error
   }
+  await linkNewPlaces(id, parsed.data.places)
 
   // Old and new slug: a renamed event must drop its old cached page too.
   updateTag(eventCacheTag(previous.slug))

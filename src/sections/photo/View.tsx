@@ -15,7 +15,7 @@ import type { PhotoData } from './schema'
 export function PhotoView({ data }: SectionProps<PhotoData>): ReactNode {
   return (
     <SectionFrame className="py-8" tone={data.tone}>
-      <div className="relative aspect-3/4 w-full overflow-hidden bg-inv-surface shadow-sm ring-1 ring-inv-muted/20">
+      <div className="inv-photo relative aspect-3/4 w-full overflow-clip bg-inv-surface shadow-sm ring-1 ring-inv-muted/20">
         <Image
           alt={data.alt}
           className="object-cover"

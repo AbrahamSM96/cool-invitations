@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import { NodeField } from './NodeField'
 
 /**
- * Fields of an object node, in display order. Photos used only by another
+ * Fields of an object node, in display order. Fields used only by another
  * layout of the section are left out.
  *
  * @param props - Component props.
@@ -24,7 +24,7 @@ export function ObjectFields({
   variant: string | null
 }): ReactNode {
   return node.fields.map(([key, field]) => {
-    const onlyFor = field.kind === 'image' ? field.image.variants : undefined
+    const onlyFor = field.variants
     if (onlyFor && (!variant || !onlyFor.includes(variant))) return null
     const path = name ? `${name}.${key}` : key
     return <NodeField key={path} name={path} node={field} variant={variant} />

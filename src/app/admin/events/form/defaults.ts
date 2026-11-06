@@ -28,6 +28,7 @@ export const NEW_EVENT: EventFormInput = {
   cityLabel: '',
   clientName: '',
   hosts: { coupleDisplay: '', partner1: emptyName, partner2: emptyName },
+  places: [],
   rsvpDeadline: '',
   slug: '',
   startsAt: '',

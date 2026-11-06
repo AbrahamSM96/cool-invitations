@@ -4,6 +4,8 @@ import { getEventPreview, SAMPLE_GUEST } from '@/data/admin-preview'
 import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 
+import { PreviewBridge } from './PreviewBridge'
+
 /**
  * Loads the event (any status) and renders it like the public page.
  *
@@ -25,16 +27,19 @@ export async function PreviewLoader({
 
   const withEnvelope = query.envelope !== '0'
   return (
-    <Invitation
-      guest={query.guest === '1' ? SAMPLE_GUEST : null}
-      invitation={{
-        ...invitation,
-        sections: withEnvelope
-          ? invitation.sections
-          : invitation.sections.filter(
-              (section) => section.type !== 'envelope'
-            ),
-      }}
-    />
+    <>
+      <PreviewBridge />
+      <Invitation
+        guest={query.guest === '1' ? SAMPLE_GUEST : null}
+        invitation={{
+          ...invitation,
+          sections: withEnvelope
+            ? invitation.sections
+            : invitation.sections.filter(
+                (section) => section.type !== 'envelope'
+              ),
+        }}
+      />
+    </>
   )
 }

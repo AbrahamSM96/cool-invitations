@@ -19,12 +19,13 @@ function splitNames(name: string): string[] {
 /**
  * Opening screen. `classic`: stacked names on paper with a script "&".
  * `photo`: full-bleed photo with the name in script over a gradient.
+ * `art`: a whole cover designed elsewhere (Canva), shown as is.
  *
  * @param props - Section props.
  * @param props.data - Section content.
  * @param props.event - Event shown in the invitation.
  * @param props.theme - Template theme.
- * @param props.variant - `classic` (default) or `photo`.
+ * @param props.variant - `classic` (default), `photo` or `art`.
  */
 export function HeroView({
   data,
@@ -39,19 +40,36 @@ export function HeroView({
   }).replaceAll('/', ' · ')
   const names = splitNames(event.hostsName)
 
-  if (variant === 'photo' && data.imageUrl) {
+  if (variant === 'art' && data.artUrl) {
     return (
-      <section className="relative flex min-h-[92svh] flex-col items-center justify-end overflow-hidden px-6 pb-16 text-center text-white">
+      <section className="relative aspect-9/16 w-full overflow-clip bg-inv-surface">
         <Image
-          alt=""
+          alt={data.artAlt ?? `Invitación de ${event.hostsName}`}
           className="object-cover"
           fill
           preload
-          sizes="(min-width: 768px) 430px, 100vw"
-          src={data.imageUrl}
+          sizes="(min-width: 768px) 440px, 100vw"
+          src={data.artUrl}
         />
+      </section>
+    )
+  }
+
+  if (variant === 'photo' && data.imageUrl) {
+    return (
+      <section className="relative flex min-h-[92svh] flex-col items-center justify-end overflow-clip px-6 pb-16 text-center text-white">
+        <div className="inv-parallax absolute inset-0">
+          <Image
+            alt=""
+            className="object-cover"
+            fill
+            preload
+            sizes="(min-width: 768px) 430px, 100vw"
+            src={data.imageUrl}
+          />
+        </div>
         <div className="absolute inset-0 bg-linear-to-b from-black/10 via-transparent to-black/60" />
-        <div className="relative flex flex-col items-center gap-3">
+        <div className="inv-hero-fade relative flex flex-col items-center gap-3">
           <p className="font-caps text-xs tracking-[0.35em] uppercase">
             {event.title}
           </p>
@@ -66,9 +84,9 @@ export function HeroView({
   }
 
   return (
-    <section className="relative flex min-h-[80svh] flex-col items-center justify-center gap-5 overflow-hidden bg-inv-surface px-6 py-20 text-center">
+    <section className="relative flex min-h-[80svh] flex-col items-center justify-center gap-5 overflow-clip bg-inv-surface px-6 py-20 text-center">
       <div className="inv-texture absolute inset-0" />
-      <div className="relative flex flex-col items-center gap-5">
+      <div className="inv-hero-fade relative flex flex-col items-center gap-5">
         <Ornament kind={theme.ornament} />
         <p className="font-caps text-xs tracking-[0.35em] text-inv-muted">
           {shortDate}

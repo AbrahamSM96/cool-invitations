@@ -3,6 +3,7 @@ import { db } from '@/db'
 import { events, guests, rsvps } from '@/db/schema'
 import { requireAdmin } from '@/lib/auth/dal'
 import { dateToZonedLocal } from '@/lib/dates'
+import { parsePlaces } from '@/lib/places'
 import { desc, eq, sql } from 'drizzle-orm'
 
 export interface AdminEventRow {
@@ -67,6 +68,7 @@ export async function getAdminEventForm(
     cityLabel: event.cityLabel ?? '',
     clientName: event.clientName ?? '',
     hosts: event.hosts,
+    places: parsePlaces(event.places),
     rsvpDeadline: event.rsvpDeadline
       ? dateToZonedLocal(event.rsvpDeadline, event.timezone)
       : '',

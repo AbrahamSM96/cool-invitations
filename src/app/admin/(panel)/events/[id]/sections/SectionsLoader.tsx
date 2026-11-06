@@ -19,5 +19,11 @@ export async function SectionsLoader({
   if (!isEventId(id)) notFound()
   const page = await getAdminSections(id)
   if (!page) notFound()
-  return <SectionsEditor eventId={id} sections={page.sections} />
+  return (
+    <SectionsEditor
+      eventId={id}
+      places={page.event.places}
+      sections={page.sections}
+    />
+  )
 }

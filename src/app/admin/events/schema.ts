@@ -6,6 +6,7 @@ import {
   WeddingHosts,
 } from '@/event-types/schemas'
 import { isValidTimeZone } from '@/lib/dates'
+import { PlaceSchema } from '@/lib/places'
 import '@/lib/zod-es'
 import { SLUG_PATTERN } from '@/lib/slug'
 import { templates } from '@/templates/registry'
@@ -25,6 +26,7 @@ const optionalText = z
 const EventBase = z.object({
   cityLabel: optionalText,
   clientName: optionalText,
+  places: z.array(PlaceSchema).max(10, 'Máximo 10 lugares.'),
   rsvpDeadline: LocalDateTime.or(z.literal('')).transform(
     (value) => value || null
   ),

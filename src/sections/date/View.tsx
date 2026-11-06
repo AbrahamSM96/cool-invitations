@@ -19,7 +19,8 @@ export function DateView({ data, event }: SectionProps<DateData>): ReactNode {
   return (
     <SectionFrame className="py-12" tone={data.tone}>
       <span className="h-px w-24 bg-inv-accent/60" />
-      <p className="font-caps text-xs tracking-[0.35em] text-inv-accent uppercase">
+      {/* Small text: band color, not the accent, so it reads on any tone. */}
+      <p className="font-caps text-xs tracking-[0.35em] uppercase opacity-80">
         {parts.weekday}
       </p>
       <p className="font-display text-7xl leading-none font-light">

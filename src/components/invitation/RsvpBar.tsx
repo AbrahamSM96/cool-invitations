@@ -31,7 +31,7 @@ export function RsvpBar({ guest }: RsvpBarProps): ReactNode {
   return (
     <div className="pointer-events-none sticky bottom-4 z-10 -mt-16 flex justify-center px-4">
       <a
-        className="pointer-events-auto flex w-full max-w-80 items-center gap-3 rounded-full bg-white/95 py-2 pr-2 pl-3 text-left text-inv-ink shadow-[0_8px_30px_-6px_rgba(0,0,0,0.25)] ring-1 ring-black/5 backdrop-blur"
+        className="pointer-events-auto flex w-full max-w-80 items-center gap-3 rounded-full bg-inv-bg/95 py-2 pr-2 pl-3 text-left text-inv-ink shadow-[0_8px_30px_-6px_rgba(0,0,0,0.25)] ring-1 ring-inv-muted/20 backdrop-blur"
         href="#rsvp"
       >
         <span

@@ -49,6 +49,8 @@ export const events = pgTable('events', {
   hashtag: text('hashtag'),
   hosts: jsonb('hosts').notNull().default({}),
   id,
+  /** Event places (`src/lib/places.ts`), picked by "Lugar" sections. */
+  places: jsonb('places').notNull().default([]),
   publishedAt: timestamp('published_at', { withTimezone: true }),
   rsvpDeadline: timestamp('rsvp_deadline', { withTimezone: true }),
   slug: text('slug').notNull().unique(),

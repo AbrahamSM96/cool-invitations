@@ -7,17 +7,13 @@ import {
   FieldError,
   FieldLabel,
 } from '@/components/ui/field'
-import { resizeImage } from '@/lib/resize-image'
 import { cn } from '@/lib/utils'
 import type { FieldNode } from '@/sections/form-fields'
 import { ImageUpIcon, Loader2Icon } from 'lucide-react'
 import { type ReactNode, useId, useRef, useState } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
-import { toast } from 'sonner'
 
-import { uploadEventImage } from '../upload-actions'
-
-import { useEditorEventId } from './EditorContext'
+import { useImageUpload } from './useImageUpload'
 
 const ASPECT_CLASS = {
   '1:1': 'aspect-square',
@@ -40,7 +36,7 @@ export function ImageUploadField({
   name: string
   node: Extract<FieldNode, { kind: 'image' }>
 }): ReactNode {
-  const eventId = useEditorEventId()
+  const uploadImage = useImageUpload()
   const { control } = useFormContext()
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -61,32 +57,10 @@ export function ImageUploadField({
          * @param file - Picked or dropped file.
          */
         async function upload(file: File): Promise<void> {
-          if (!file.type.startsWith('image/')) {
-            toast.error('Ese archivo no es una foto.')
-            return
-          }
           setUploading(true)
-          try {
-            const resized = await resizeImage(file).catch(() => null)
-            if (!resized) {
-              toast.error('No se pudo leer la foto. Usa JPG o PNG.')
-              return
-            }
-            const data = new FormData()
-            data.set('file', resized.file)
-            data.set('width', String(resized.width))
-            data.set('height', String(resized.height))
-            const result = await uploadEventImage(eventId, data)
-            if (!result.ok) {
-              toast.error(result.error)
-              return
-            }
-            field.onChange(result.url)
-          } catch {
-            toast.error('No se pudo subir la foto. Inténtalo de nuevo.')
-          } finally {
-            setUploading(false)
-          }
+          const uploaded = await uploadImage(file)
+          setUploading(false)
+          if (uploaded) field.onChange(uploaded)
         }
 
         return (

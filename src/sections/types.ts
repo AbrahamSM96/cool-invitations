@@ -1,4 +1,5 @@
 import type { EventType, Voice } from '@/event-types'
+import type { Place } from '@/lib/places'
 import type { Theme } from '@/templates/types'
 import type { ReactNode } from 'react'
 import type { z } from 'zod'
@@ -15,6 +16,8 @@ export interface EventView {
   timezone: string
   rsvpDeadline: Date | null
   cityLabel: string | null
+  /** Places from the event data, picked by "Lugar" sections. */
+  places: Place[]
 }
 
 /** Guest data, present only on a personalized invitation. */

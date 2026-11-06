@@ -29,7 +29,11 @@ function requestMessage(missing: ChecklistSlot[]): string {
   const lines = missing.map((slot) => {
     const where = slot.sectionName ? ` (${slot.sectionName})` : ''
     const optional = slot.required ? '' : ' — opcional'
-    return `• ${slot.label}${where}: foto ${ASPECT_TEXT[slot.aspect]}${optional}`
+    const what =
+      slot.count === undefined
+        ? `foto ${ASPECT_TEXT[slot.aspect]}`
+        : `varias fotos (de preferencia ${ASPECT_TEXT[slot.aspect]}es)`
+    return `• ${slot.label}${where}: ${what}${optional}`
   })
   return [
     'Hola, para tu invitación necesito estas fotos:',
@@ -118,7 +122,9 @@ export function PhotoChecklist({
                 <span className="truncate text-xs text-muted-foreground">
                   {slot.sectionName ?? sectionCatalog[slot.sectionType].label}
                   {' · '}
-                  {ASPECT_TEXT[slot.aspect]}
+                  {slot.count === undefined
+                    ? ASPECT_TEXT[slot.aspect]
+                    : `${slot.count} ${slot.count === 1 ? 'foto' : 'fotos'}`}
                   {slot.required ? '' : ' · opcional'}
                 </span>
               </span>

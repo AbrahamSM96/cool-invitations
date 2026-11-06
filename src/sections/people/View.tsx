@@ -24,7 +24,9 @@ export function PeopleView({ data }: SectionProps<PeopleData>): ReactNode {
           {data.title}
         </p>
       ) : null}
-      <div className={`mt-2 grid w-full divide-inv-muted/30 ${columns}`}>
+      <div
+        className={`inv-stagger inv-stagger-row mt-2 grid w-full divide-inv-muted/30 ${columns}`}
+      >
         {data.groups.map((group) => (
           <div
             className="flex flex-col items-center gap-2 px-3"

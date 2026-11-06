@@ -11,6 +11,7 @@
   /* Invitation theme: values come from the template (src/templates). */
   --color-inv-bg: var(--inv-bg);
   --color-inv-surface: var(--inv-surface);
+  --color-inv-card: var(--inv-card);
   --color-inv-strong: var(--inv-strong);
   --color-inv-on-strong: var(--inv-on-strong);
   --color-inv-ink: var(--inv-ink);
@@ -70,20 +71,162 @@
 
 .inv-texture {
   background-image: var(--inv-texture);
+  background-size: var(--inv-texture-size, auto);
 }
 
 .inv-envelope-paper {
   background: var(--inv-envelope-paper);
 }
 
-/* Sections fade up as they scroll into the card. CSS only: no JS shipped. */
+/* Scroll-driven motion, CSS only (no JS shipped). The stage's
+   `data-motion` picks a preset: `none`, `soft` (sections fade up) or
+   `expressive` (cascading lists, uncovering photos, parallax cover).
+   Only opacity, transform and clip-path move, so scrolling stays smooth.
+   Without support or with "reduce motion", everything is simply shown.
+   Animated elements must not sit inside `overflow: hidden` (a scroll
+   container, which would capture their timeline): use `overflow-clip`. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .inv-reveal {
+    [data-motion='soft'] .inv-reveal,
+    [data-motion='expressive'] .inv-reveal {
       animation: inv-reveal linear both;
       animation-range: entry 0% entry 60%;
       animation-timeline: view();
     }
+
+    [data-motion='expressive'] .inv-reveal {
+      animation-name: inv-rise;
+    }
+
+    /* Lists: every item enters on its own, so they cascade down. */
+    [data-motion='expressive'] .inv-stagger > * {
+      animation: inv-rise linear both;
+      animation-range: entry 0% entry 70%;
+      animation-timeline: view();
+    }
+
+    /* Items side by side would enter together: delay every other one. */
+    [data-motion='expressive'] .inv-stagger-row > :nth-child(even) {
+      animation-range: entry 20% entry 90%;
+    }
+
+    /* Photos open like a window while the picture settles from a zoom. */
+    [data-motion='expressive'] .inv-photo {
+      animation: inv-uncover linear both;
+      animation-range: entry 0% entry 80%;
+      animation-timeline: view();
+    }
+
+    [data-motion='expressive'] .inv-photo img {
+      animation: inv-settle linear both;
+      animation-range: entry 0% cover 50%;
+      animation-timeline: view();
+    }
+
+    /* Cover: the picture drifts slower than the page and the names fade
+       away as the guest scrolls on. */
+    [data-motion='expressive'] .inv-parallax {
+      animation: inv-parallax linear both;
+      animation-range: exit 0% exit 100%;
+      animation-timeline: view();
+    }
+
+    [data-motion='expressive'] .inv-hero-fade {
+      animation: inv-fade-away linear both;
+      animation-range: exit 0% exit 80%;
+      animation-timeline: view();
+    }
+  }
+}
+
+/* Fallback for browsers without scroll-driven animations (Firefox, iOS
+   before 26): `MotionFallback` marks elements `data-inview` as they enter
+   and these transitions play. Hiding only applies once that script has
+   added `inv-motion-js`, so content never stays hidden. */
+@supports not (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .inv-motion-js[data-motion='soft'] .inv-reveal,
+    .inv-motion-js[data-motion='expressive']
+      :is(.inv-reveal, .inv-stagger > *) {
+      transition:
+        opacity 0.7s ease,
+        transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .inv-motion-js[data-motion='soft'] .inv-reveal:not([data-inview]) {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+
+    .inv-motion-js[data-motion='expressive']
+      :is(.inv-reveal, .inv-stagger > *):not([data-inview]) {
+      opacity: 0;
+      transform: translateY(44px) scale(0.97);
+    }
+
+    .inv-motion-js[data-motion='expressive']
+      .inv-stagger-row
+      > :nth-child(even) {
+      transition-delay: 0.12s;
+    }
+
+    .inv-motion-js[data-motion='expressive'] .inv-photo {
+      transition: clip-path 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .inv-motion-js[data-motion='expressive'] .inv-photo img {
+      transition: transform 1.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    .inv-motion-js[data-motion='expressive'] .inv-photo:not([data-inview]) {
+      clip-path: inset(14% 10% 14% 10% round 6px);
+    }
+
+    .inv-motion-js[data-motion='expressive'] .inv-photo:not([data-inview]) img {
+      transform: scale(1.18);
+    }
+  }
+}
+
+@keyframes inv-rise {
+  from {
+    opacity: 0;
+    transform: translateY(44px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes inv-uncover {
+  from {
+    clip-path: inset(14% 10% 14% 10% round 6px);
+  }
+  to {
+    clip-path: inset(0 round 0);
+  }
+}
+
+@keyframes inv-settle {
+  from {
+    transform: scale(1.18);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes inv-parallax {
+  to {
+    transform: translateY(30%);
+  }
+}
+
+@keyframes inv-fade-away {
+  to {
+    opacity: 0;
+    transform: translateY(-48px) scale(0.96);
   }
 }
 
@@ -180,5 +323,218 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Envelope (src/sections/envelope/EnvelopeGate.tsx) ---------------------- */
+
+.inv-env-overlay {
+  /* Fixed: covers the whole stage, not just the card, like a real
+     envelope on the table. */
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  isolation: isolate;
+  transition: opacity 0.6s ease 0.95s;
+}
+
+/* The stage behind the envelope is its own layer, so it can fade while
+   the flaps swing and the invitation shows through. */
+.inv-env-overlay::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--inv-stage);
+  content: '';
+  transition: opacity 0.55s ease 0.35s;
+}
+
+.inv-env-overlay[data-state='opening'] {
+  pointer-events: none;
+  opacity: 0;
+}
+
+.inv-env-overlay[data-state='opening']::before,
+[data-state='opening'] .inv-env-body {
+  opacity: 0;
+}
+
+.inv-env {
+  position: relative;
+  width: min(84%, 22rem);
+  aspect-ratio: 0.69;
+  perspective: 1500px;
+  cursor: pointer;
+  transition: transform 0.4s ease;
+}
+
+.inv-env:hover {
+  transform: translateY(-3px);
+}
+
+.inv-env:focus-visible {
+  outline: 2px solid var(--inv-accent);
+  outline-offset: 6px;
+}
+
+.inv-env-body,
+.inv-env-flap {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+}
+
+.inv-env-body {
+  transition: opacity 0.4s ease 0.35s;
+  box-shadow:
+    0 30px 52px rgb(72 57 34 / 0.26),
+    0 9px 18px rgb(72 57 34 / 0.16);
+}
+
+/* Two side flaps meeting in a point at the center, like a folded card. */
+.inv-env-flap {
+  backface-visibility: hidden;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.3s;
+}
+
+.inv-env-flap-left {
+  clip-path: polygon(0 0, 45% 0, 56% 50%, 45% 100%, 0 100%);
+  transform-origin: left center;
+  filter: brightness(1.05) drop-shadow(4px 0 7px rgb(46 61 47 / 0.25));
+}
+
+.inv-env-flap-right {
+  clip-path: polygon(55% 0, 100% 0, 100% 100%, 55% 100%, 44% 50%);
+  transform-origin: right center;
+  filter: brightness(0.93) drop-shadow(-4px 0 7px rgb(46 61 47 / 0.25));
+}
+
+[data-state='opening'] .inv-env-flap-left {
+  transform: rotateY(-105deg);
+}
+
+[data-state='opening'] .inv-env-flap-right {
+  transform: rotateY(105deg);
+}
+
+.inv-env-decoration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform: rotate(-15deg);
+  transition: opacity 0.3s ease;
+}
+
+.inv-env-sprig {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 168%;
+  aspect-ratio: 3 / 2;
+  background: var(--inv-envelope-decoration) center / contain no-repeat;
+  transform: translate(-54%, -60%);
+}
+
+.inv-env-ornament {
+  position: absolute;
+  opacity: var(--inv-envelope-ornament, 1);
+  top: 24%;
+  left: 50%;
+  transform: translateX(-50%) rotate(15deg);
+}
+
+.inv-env-seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 6rem;
+  height: 6rem;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 5px 9px rgb(46 61 47 / 0.35));
+  transition:
+    transform 0.35s ease,
+    opacity 0.3s ease;
+}
+
+.inv-env-seal > * {
+  grid-area: 1 / 1;
+}
+
+/* Seal picture over a wax-colored disc: the disc only shows without a
+   picture (it sits inside the wax). */
+.inv-env-seal-art {
+  width: 100%;
+  height: 100%;
+  background:
+    var(--inv-envelope-seal-image) center / contain no-repeat,
+    radial-gradient(
+      circle at 42% 38%,
+      rgb(255 255 255 / 0.35),
+      transparent 22%
+    ),
+    radial-gradient(circle, var(--inv-envelope-seal) 0 37%, transparent 38%);
+}
+
+.inv-env-monogram {
+  color: rgb(92 70 30 / 0.75);
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 0 rgb(255 240 200 / 0.6);
+}
+
+.inv-env-recipient {
+  position: absolute;
+  top: 76%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 72%;
+  text-align: center;
+  text-shadow: 0 2px 5px rgb(25 42 30 / 0.45);
+  transform: translateX(-50%);
+  transition:
+    opacity 0.25s ease,
+    transform 0.35s ease;
+}
+
+.inv-env-hint {
+  color: var(--inv-muted);
+  transition: opacity 0.25s ease;
+}
+
+[data-state='opening'] .inv-env-seal {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.75);
+}
+
+[data-state='opening'] .inv-env-decoration,
+[data-state='opening'] .inv-env-recipient,
+[data-state='opening'] .inv-env-hint {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-env-flap,
+  .inv-env-seal,
+  .inv-env {
+    transition: none;
+  }
+
+  [data-state='opening'] .inv-env-flap-left,
+  [data-state='opening'] .inv-env-flap-right {
+    transform: none;
+  }
+
+  .inv-env-overlay {
+    transition: opacity 0.4s ease;
   }
 }

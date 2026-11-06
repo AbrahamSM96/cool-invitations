@@ -1,6 +1,7 @@
 'use client'
 
 import type { AdminSection } from '@/data/admin-sections'
+import type { Place } from '@/lib/places'
 import { cn } from '@/lib/utils'
 import { sectionCatalog } from '@/sections/catalog'
 import { useSortable } from '@dnd-kit/sortable'
@@ -12,6 +13,7 @@ import { sectionSubtitle } from './section-subtitle'
 
 interface SortableSectionItemProps {
   section: AdminSection
+  places: Place[]
   selected: boolean
   onSelect: () => void
   onToggle: () => void
@@ -24,12 +26,14 @@ interface SortableSectionItemProps {
  * @param props - Component props.
  * @param props.onSelect - Opens the section in the editor.
  * @param props.onToggle - Shows or hides the section.
+ * @param props.places - Event places, to name linked venues.
  * @param props.section - Section of the row.
  * @param props.selected - Row is open in the editor.
  */
 export function SortableSectionItem({
   onSelect,
   onToggle,
+  places,
   section,
   selected,
 }: SortableSectionItemProps): ReactNode {
@@ -41,7 +45,7 @@ export function SortableSectionItem({
     transform,
     transition,
   } = useSortable({ id: section.id })
-  const subtitle = sectionSubtitle(section.data)
+  const subtitle = sectionSubtitle(section.data, places)
 
   return (
     <li

@@ -1,9 +1,11 @@
 import { db } from '@/db'
 import { events, guests, rsvps, sections } from '@/db/schema'
 import { getHostsDisplayName } from '@/event-types'
+import { parsePlaces } from '@/lib/places'
 import { isSectionType, type SectionType } from '@/sections/registry'
 import { sections as sectionModules } from '@/sections/registry'
 import type { EventView, GuestView } from '@/sections/types'
+import { parseOverrides, type ThemeOverrides } from '@/templates/overrides'
 import { and, asc, eq } from 'drizzle-orm'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -17,6 +19,8 @@ export interface InvitationSection {
 export interface PublishedEvent {
   event: EventView
   templateKey: string
+  /** Event changes to its template ("Diseño" tab). */
+  themeOverrides: ThemeOverrides
   sections: InvitationSection[]
 }
 
@@ -93,6 +97,7 @@ export async function buildInvitation(
       cityLabel: event.cityLabel,
       hostsName: getHostsDisplayName(event.type, event.hosts),
       id: event.id,
+      places: parsePlaces(event.places),
       rsvpDeadline: event.rsvpDeadline,
       slug: event.slug,
       startsAt: event.startsAt,
@@ -103,6 +108,7 @@ export async function buildInvitation(
     },
     sections: validSections,
     templateKey: event.templateKey,
+    themeOverrides: parseOverrides(event.themeOverrides),
   }
 }
 

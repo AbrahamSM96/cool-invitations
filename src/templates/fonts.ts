@@ -1,8 +1,12 @@
 import {
+  Bebas_Neue,
+  Bodoni_Moda,
   Cinzel,
   Cormorant_Garamond,
   EB_Garamond,
   Great_Vibes,
+  Josefin_Sans,
+  Lobster,
   Pinyon_Script,
   Playfair_Display,
 } from 'next/font/google'
@@ -52,6 +56,34 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
 })
 
+const bodoni = Bodoni_Moda({
+  preload: false,
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  variable: '--font-bodoni',
+})
+
+const josefin = Josefin_Sans({
+  preload: false,
+  subsets: ['latin'],
+  variable: '--font-josefin',
+  weight: ['300', '400', '600'],
+})
+
+const bebas = Bebas_Neue({
+  preload: false,
+  subsets: ['latin'],
+  variable: '--font-bebas',
+  weight: '400',
+})
+
+const lobster = Lobster({
+  preload: false,
+  subsets: ['latin'],
+  variable: '--font-lobster',
+  weight: '400',
+})
+
 /** Class names that expose every invitation font as a CSS variable. */
 export const templateFontVariables = [
   cormorant.variable,
@@ -60,4 +92,8 @@ export const templateFontVariables = [
   pinyonScript.variable,
   greatVibes.variable,
   playfair.variable,
+  bodoni.variable,
+  josefin.variable,
+  bebas.variable,
+  lobster.variable,
 ].join(' ')

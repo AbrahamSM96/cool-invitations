@@ -1,5 +1,9 @@
 export type OrnamentKind = 'sprig' | 'flourish'
 
+/** Scroll animation preset (`globals.css`, `[data-motion]`). */
+export const MOTION_PRESETS = ['none', 'soft', 'expressive'] as const
+export type Motion = (typeof MOTION_PRESETS)[number]
+
 export interface Theme {
   colors: {
     /** Main invitation background. */
@@ -20,6 +24,8 @@ export interface Theme {
     primary: string
     /** Text on `primary`. */
     onPrimary: string
+    /** Translucent panel over the background (cards, inputs, RSVP bar). */
+    card: string
   }
   fonts: {
     /** Titles and names. CSS `font-family` value. */
@@ -33,8 +39,10 @@ export interface Theme {
   }
   /** CSS `background` behind the invitation card on wide screens. */
   stage: string
-  /** CSS `background` layered on "soft" bands (textures, marble...). */
+  /** CSS `background-image` layered on "soft" bands (textures, marble...). */
   texture: string
+  /** CSS `background-size` of `texture`, for repeating patterns. */
+  textureSize?: string
   envelope: {
     /** CSS `background` of the envelope paper. */
     paper: string
@@ -42,8 +50,14 @@ export interface Theme {
     seal: string
     /** Text on the envelope. */
     ink: string
+    /** Wax seal picture (transparent PNG/WebP); `seal` color is the fallback. */
+    sealImage?: string
+    /** Picture laid across the envelope (flowers, sprig); else the ornament. */
+    decorationImage?: string
   }
   ornament: OrnamentKind
+  /** Scroll animations; `soft` when absent. */
+  motion?: Motion
 }
 
 export interface Template {

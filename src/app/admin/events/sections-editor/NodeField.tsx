@@ -9,6 +9,7 @@ import { EnumField } from './EnumField'
 import { ImageUploadField } from './ImageUploadField'
 import { InputField } from './InputField'
 import { ObjectFields } from './ObjectFields'
+import { PlaceField } from './PlaceField'
 import { PrimitiveListField } from './PrimitiveListField'
 
 export interface NodeFieldProps {
@@ -46,6 +47,8 @@ export function NodeField({ name, node, variant }: NodeFieldProps): ReactNode {
       )
     case 'enum':
       return <EnumField name={name} node={node} />
+    case 'place':
+      return <PlaceField name={name} node={node} />
     case 'image':
       return <ImageUploadField name={name} node={node} />
     case 'boolean':

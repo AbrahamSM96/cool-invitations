@@ -7,6 +7,7 @@ export const lilaReal: Template = {
     colors: {
       accent: '#B9975B',
       bg: '#FBF8FC',
+      card: 'rgba(255, 255, 255, 0.45)',
       ink: '#3E3346',
       muted: '#8E7F98',
       onPrimary: '#FFFFFF',

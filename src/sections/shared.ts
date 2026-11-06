@@ -7,7 +7,9 @@ import { z } from 'zod'
 declare module 'zod' {
   interface GlobalMeta {
     /** Input to use instead of the default for the field's type. */
-    widget?: 'textarea' | 'color'
+    widget?: 'textarea' | 'color' | 'place'
+    /** Only shown for these section variants (layouts). */
+    variants?: readonly string[]
     /** Labels for enum values, value → label. */
     optionLabels?: Record<string, string>
     /**

@@ -31,6 +31,7 @@ import {
 
 import { emptyHosts, NEW_EVENT, suggestSlug } from './defaults'
 import { HostsFields } from './HostsFields'
+import { PlacesFields } from './PlacesFields'
 import { SelectField } from './SelectField'
 import { TextField } from './TextField'
 
@@ -170,9 +171,9 @@ export function EventFormView({
 
         <Card>
           <CardHeader>
-            <CardTitle>Fecha y lugar</CardTitle>
+            <CardTitle>Fecha y hora</CardTitle>
             <CardDescription>
-              La hora es la del lugar del evento.
+              Cuándo empieza, en la hora local del lugar del evento.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-5 sm:grid-cols-2">
@@ -193,11 +194,24 @@ export function EventFormView({
               type="datetime-local"
             />
             <TextField
-              description="Opcional."
+              description="Opcional. Texto corto del cierre, ej. 14.11.2026 · Guadalajara."
               label="Ciudad"
               name="cityLabel"
               placeholder="Guadalajara, Jalisco"
             />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Lugares</CardTitle>
+            <CardDescription>
+              Dónde es el evento. Al guardar se ponen solos en las secciones
+              "Lugar" vacías, en el mismo orden.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PlacesFields />
           </CardContent>
         </Card>
 

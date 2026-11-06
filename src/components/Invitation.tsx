@@ -2,9 +2,11 @@ import type { PublishedEvent } from '@/data/invitations'
 import { sections } from '@/sections/registry'
 import type { GuestView } from '@/sections/types'
 import { templateFontVariables } from '@/templates/fonts'
+import { applyOverrides } from '@/templates/overrides'
 import { getTemplate, themeToCssVariables } from '@/templates/registry'
 import type { ReactNode } from 'react'
 
+import { MotionFallback } from './invitation/MotionFallback'
 import { RsvpBar } from './invitation/RsvpBar'
 
 interface InvitationProps {
@@ -22,7 +24,10 @@ interface InvitationProps {
  * @param props.invitation - Event and its enabled sections.
  */
 export function Invitation({ guest, invitation }: InvitationProps): ReactNode {
-  const { theme } = getTemplate(invitation.templateKey)
+  const theme = applyOverrides(
+    getTemplate(invitation.templateKey).theme,
+    invitation.themeOverrides
+  )
   const hasRsvp = invitation.sections.some((section) => section.type === 'rsvp')
 
   const rendered = invitation.sections.map((section) => {
@@ -44,6 +49,8 @@ export function Invitation({ guest, invitation }: InvitationProps): ReactNode {
   return (
     <div
       className={`${templateFontVariables} inv-stage fixed inset-0 flex items-center justify-center font-body text-inv-ink md:p-8`}
+      data-invitation-theme=""
+      data-motion={theme.motion ?? 'soft'}
       style={themeToCssVariables(theme)}
     >
       <div className="relative h-svh w-full overflow-hidden bg-inv-bg md:h-[min(880px,calc(100svh-4rem))] md:max-w-[440px] md:rounded-[4px] md:shadow-[0_30px_80px_-20px_rgba(40,30,20,0.45)]">
@@ -52,6 +59,7 @@ export function Invitation({ guest, invitation }: InvitationProps): ReactNode {
           {guest?.enabled && hasRsvp ? <RsvpBar guest={guest} /> : null}
         </main>
         {rendered.filter((item) => item.overlay).map((item) => item.element)}
+        <MotionFallback />
       </div>
     </div>
   )

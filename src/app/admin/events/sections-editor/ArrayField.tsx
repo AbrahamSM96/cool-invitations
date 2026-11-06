@@ -3,12 +3,19 @@
 import { Button } from '@/components/ui/button'
 import { FieldDescription, FieldError } from '@/components/ui/field'
 import { type FieldNode, withFormDefaults } from '@/sections/form-fields'
-import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ImagePlusIcon,
+  PlusIcon,
+  Trash2Icon,
+} from 'lucide-react'
+import { type ReactNode, useId, useState } from 'react'
 import { useFieldArray, useFormContext } from 'react-hook-form'
 
 import { ObjectFields } from './ObjectFields'
 import { useFieldError } from './useFieldError'
+import { useImageUpload } from './useImageUpload'
 
 /**
  * Repeatable group of fields (bank accounts, family groups...), with add,
@@ -31,8 +38,37 @@ export function ArrayField({
   const { control } = useFormContext()
   const { append, fields, move, remove } = useFieldArray({ control, name })
   const error = useFieldError(name)
+  const uploadImage = useImageUpload()
+  const bulkInputId = useId()
+  const [progress, setProgress] = useState<{
+    done: number
+    total: number
+  } | null>(null)
   const item = node.item
   if (item.kind !== 'object') return null
+  // Lists of photos (gallery) get a "pick many at once" button.
+  const imageKey = item.fields.find(([, field]) => field.kind === 'image')?.[0]
+
+  /**
+   * Uploads several photos one after another, adding an item for each.
+   *
+   * @param files - Picked files.
+   */
+  async function uploadMany(files: File[]): Promise<void> {
+    if (!imageKey || item.kind !== 'object') return
+    setProgress({ done: 0, total: files.length })
+    for (const [index, file] of files.entries()) {
+      const url = await uploadImage(file)
+      if (url) {
+        append({
+          ...(withFormDefaults(item, undefined) as object),
+          [imageKey]: url,
+        })
+      }
+      setProgress({ done: index + 1, total: files.length })
+    }
+    setProgress(null)
+  }
 
   return (
     <fieldset className="flex flex-col gap-3">
@@ -88,15 +124,46 @@ export function ArrayField({
           />
         </div>
       ))}
-      <Button
-        className="self-start"
-        onClick={() => append(withFormDefaults(item, undefined))}
-        size="sm"
-        type="button"
-        variant="outline"
-      >
-        <PlusIcon /> Agregar
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        {imageKey ? (
+          <>
+            <Button
+              disabled={progress !== null}
+              onClick={() => document.getElementById(bulkInputId)?.click()}
+              size="sm"
+              type="button"
+            >
+              <ImagePlusIcon />
+              {progress
+                ? `Subiendo ${progress.done} de ${progress.total}…`
+                : 'Subir varias fotos'}
+            </Button>
+            <input
+              accept="image/*"
+              className="sr-only"
+              id={bulkInputId}
+              multiple
+              onChange={(event) => {
+                const input = event.currentTarget
+                const files = [...(input.files ?? [])]
+                input.value = ''
+                if (files.length > 0) void uploadMany(files)
+              }}
+              tabIndex={-1}
+              type="file"
+            />
+          </>
+        ) : null}
+        <Button
+          disabled={progress !== null}
+          onClick={() => append(withFormDefaults(item, undefined))}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          <PlusIcon /> Agregar
+        </Button>
+      </div>
       <FieldError errors={[error]} />
     </fieldset>
   )

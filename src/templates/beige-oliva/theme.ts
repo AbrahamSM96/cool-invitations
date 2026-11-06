@@ -1,5 +1,8 @@
 import type { Template } from '../types'
 
+/** Pictures in `public/templates/beige-oliva`. */
+const ASSETS = '/templates/beige-oliva'
+
 export const beigeOliva: Template = {
   key: 'beige-oliva',
   name: 'Beige oliva',
@@ -7,6 +10,7 @@ export const beigeOliva: Template = {
     colors: {
       accent: '#B89A5C',
       bg: '#FAF7F0',
+      card: 'rgba(255, 255, 255, 0.4)',
       ink: '#3B3A33',
       muted: '#8C8473',
       onPrimary: '#F7F3EA',
@@ -16,10 +20,11 @@ export const beigeOliva: Template = {
       surface: '#F1ECDF',
     },
     envelope: {
+      decorationImage: `${ASSETS}/envelope-sprig.webp`,
       ink: '#F4EFE3',
-      paper:
-        'linear-gradient(115deg, #6E8366 0%, #6E8366 48%, #66795F 48%, #66795F 100%)',
+      paper: `url('${ASSETS}/envelope-paper.webp') center / cover, #7C8E6E`,
       seal: '#C9A45A',
+      sealImage: `${ASSETS}/envelope-seal.webp`,
     },
     fonts: {
       body: 'var(--font-eb-garamond), serif',
@@ -28,8 +33,8 @@ export const beigeOliva: Template = {
       script: 'var(--font-pinyon-script), cursive',
     },
     ornament: 'sprig',
-    stage:
-      'radial-gradient(ellipse at 15% 85%, #E6DCC8 0%, transparent 55%), radial-gradient(ellipse at 85% 80%, #E9E0CE 0%, transparent 50%), linear-gradient(180deg, #E8DFD0 0%, #DDD1BC 100%)',
+    // Linen with baby's breath and eucalyptus, behind the card and envelope.
+    stage: `url('${ASSETS}/stage.webp') center / cover no-repeat, #E8DFD0`,
     texture: 'none',
   },
 }

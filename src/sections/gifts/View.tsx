@@ -24,10 +24,10 @@ export function GiftsView({ data }: SectionProps<GiftsData>): ReactNode {
         <p className="max-w-sm leading-relaxed">{data.text}</p>
       ) : null}
       {data.accounts.length > 0 ? (
-        <ul className="mt-2 flex w-full flex-col gap-3">
+        <ul className="inv-stagger mt-2 flex w-full flex-col gap-3">
           {data.accounts.map((account) => (
             <li
-              className="flex items-center gap-3 border border-inv-muted/25 bg-white/40 px-4 py-3 text-left"
+              className="flex items-center gap-3 border border-inv-muted/25 bg-inv-card px-4 py-3 text-left"
               key={account.number}
             >
               <div className="flex min-w-0 flex-1 flex-col">

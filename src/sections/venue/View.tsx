@@ -4,19 +4,28 @@ import type { ReactNode } from 'react'
 
 import type { SectionProps } from '../types'
 
+import { resolveVenue } from './resolve'
 import type { VenueData } from './schema'
 
 /**
- * One venue card: round photo, place, address, time and map button.
+ * One venue card: round photo, place, address, time and map button. Data
+ * comes from the linked event place, overridden by the section's fields.
  *
  * @param props - Section props.
  * @param props.data - Section content.
+ * @param props.event - Event shown in the invitation (its places).
  */
-export function VenueView({ data }: SectionProps<VenueData>): ReactNode {
+export function VenueView({
+  data: section,
+  event,
+}: SectionProps<VenueData>): ReactNode {
+  const data = resolveVenue(section, event)
+  if (!data) return null
+
   return (
-    <SectionFrame tone={data.tone}>
+    <SectionFrame tone={section.tone}>
       <SectionHeading eyebrow={data.eyebrow} title={data.title} />
-      <div className="mt-2 flex w-full flex-col items-center gap-2 border border-inv-muted/25 bg-white/40 px-6 py-8">
+      <div className="mt-2 flex w-full flex-col items-center gap-2 border border-inv-muted/25 bg-inv-card px-6 py-8">
         {data.imageUrl ? (
           <div
             aria-hidden="true"
@@ -34,7 +43,9 @@ export function VenueView({ data }: SectionProps<VenueData>): ReactNode {
           {data.address}
         </p>
         <span className="my-2 h-px w-8 bg-inv-muted/40" />
-        <p className="font-display text-3xl font-light">{data.time}</p>
+        {data.time ? (
+          <p className="font-display text-3xl font-light">{data.time}</p>
+        ) : null}
         {data.note ? (
           <p className="font-caps text-[10px] tracking-[0.25em] text-inv-muted">
             {data.note}

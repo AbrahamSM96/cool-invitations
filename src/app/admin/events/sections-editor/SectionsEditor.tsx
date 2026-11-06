@@ -1,6 +1,7 @@
 'use client'
 
 import type { AdminSection } from '@/data/admin-sections'
+import type { Place } from '@/lib/places'
 import { getImageSlots } from '@/sections/images'
 import {
   closestCenter,
@@ -37,6 +38,7 @@ import { SortableSectionItem } from './SortableSectionItem'
 
 interface SectionsEditorProps {
   eventId: string
+  places: Place[]
   sections: AdminSection[]
 }
 
@@ -46,10 +48,12 @@ interface SectionsEditorProps {
  *
  * @param props - Component props.
  * @param props.eventId - Event being edited.
+ * @param props.places - Places of the event, for "Lugar" sections.
  * @param props.sections - Saved sections, in order.
  */
 export function SectionsEditor({
   eventId,
+  places,
   sections,
 }: SectionsEditorProps): ReactNode {
   const router = useRouter()
@@ -77,7 +81,7 @@ export function SectionsEditor({
   const visible = ordered.filter((section) => section.enabled)
   const photoSlots: ChecklistSlot[] = getImageSlots(visible).map((slot) => ({
     ...slot,
-    sectionName: sectionSubtitle(byId.get(slot.sectionId)?.data),
+    sectionName: sectionSubtitle(byId.get(slot.sectionId)?.data, places),
   }))
 
   const sensors = useSensors(
@@ -186,6 +190,7 @@ export function SectionsEditor({
               {ordered.map((section) => (
                 <SortableSectionItem
                   key={section.id}
+                  places={places}
                   onSelect={() => select(section.id)}
                   onToggle={() => void toggle(section)}
                   section={section}
@@ -205,7 +210,7 @@ export function SectionsEditor({
 
       <section className="rounded-xl border bg-background p-4 sm:p-6">
         {selected ? (
-          <EditorEventContext value={eventId}>
+          <EditorEventContext value={{ id: eventId, places }}>
             <SectionForm
               key={selected.id}
               onDeleted={onDeleted}
